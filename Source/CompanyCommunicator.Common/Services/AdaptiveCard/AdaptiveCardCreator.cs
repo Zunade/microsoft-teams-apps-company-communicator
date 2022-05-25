@@ -1,4 +1,4 @@
-﻿// <copyright file="AdaptiveCardCreator.cs" company="Microsoft">
+// <copyright file="AdaptiveCardCreator.cs" company="Microsoft">
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 // </copyright>
@@ -6,8 +6,6 @@
 namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text.Json;
     using AdaptiveCards;
     using Microsoft.Teams.Apps.CompanyCommunicator.Common.Repositories.NotificationData;
 
@@ -29,11 +27,7 @@ namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
                 notificationDataEntity.Summary,
                 notificationDataEntity.Author,
                 notificationDataEntity.ButtonTitle,
-                notificationDataEntity.ButtonLink,
-                notificationDataEntity.Buttons,
-                notificationDataEntity.TrackingUrl,
-                notificationDataEntity.ChannelImage,
-                notificationDataEntity.ChannelTitle);
+                notificationDataEntity.ButtonLink);
         }
 
         /// <summary>
@@ -45,10 +39,6 @@ namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
         /// <param name="author">The adaptive card's author value.</param>
         /// <param name="buttonTitle">The adaptive card's button title value.</param>
         /// <param name="buttonUrl">The adaptive card's button url value.</param>
-        /// <param name="buttons">The adaptive card's collection of buttons.</param>
-        /// <param name="trackingurl">The adaptive card read tracking url.</param>
-        /// <param name="cardimage">Image for the card when targeting is enabled.</param>
-        /// <param name="cardtitle">Title for the card when targeting is enabled.</param>
         /// <returns>The created adaptive card instance.</returns>
         public AdaptiveCard CreateAdaptiveCard(
             string title,
@@ -56,57 +46,39 @@ namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
             string summary,
             string author,
             string buttonTitle,
-            string buttonUrl,
-            string buttons,
-            string trackingurl,
-            string cardimage,
-            string cardtitle)
+            string buttonUrl)
         {
             var version = new AdaptiveSchemaVersion(1, 0);
             AdaptiveCard card = new AdaptiveCard(version);
 
-            if (!string.IsNullOrWhiteSpace(cardimage))
-            {
-                card.Body.Add(new AdaptiveImage()
-                {
-                    Url = new Uri(cardimage, UriKind.RelativeOrAbsolute),
-                });
-            }
+            string imgHeader = "https://raw.githubusercontent.com/Zunade/images/main/Hypatia(192).png";
+            string imgFooter = "https://raw.githubusercontent.com/Zunade/images/main/confucius192.png";
 
-            if (!string.IsNullOrWhiteSpace(cardtitle))
+            card.Body.Add(new AdaptiveImage()
             {
-                card.Body.Add(new AdaptiveTextBlock()
-                {
-                    Text = cardtitle,
-                    Wrap = true,
-                });
-            }
+                Url = new Uri(imgHeader, UriKind.RelativeOrAbsolute),
+                Spacing = AdaptiveSpacing.Default,
+                Size = AdaptiveImageSize.Stretch,
+                AltText = string.Empty,
+            });
 
             card.Body.Add(new AdaptiveTextBlock()
             {
                 Text = title,
                 Size = AdaptiveTextSize.ExtraLarge,
+                HorizontalAlignment = AdaptiveHorizontalAlignment.Center,
                 Weight = AdaptiveTextWeight.Bolder,
                 Wrap = true,
-                Separator = true,
             });
 
             if (!string.IsNullOrWhiteSpace(imageUrl))
             {
-                // allows the expansion of images in the card
-                var additionalProperty = new SerializableDictionary<string, object>();
-                additionalProperty.Add("msteams", new
-                {
-                    allowExpand = true,
-                });
-
                 card.Body.Add(new AdaptiveImage()
                 {
                     Url = new Uri(imageUrl, UriKind.RelativeOrAbsolute),
                     Spacing = AdaptiveSpacing.Default,
                     Size = AdaptiveImageSize.Stretch,
                     AltText = string.Empty,
-                    AdditionalProperties = additionalProperty,
                 });
             }
 
@@ -131,8 +103,7 @@ namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
             }
 
             if (!string.IsNullOrWhiteSpace(buttonTitle)
-                && !string.IsNullOrWhiteSpace(buttonUrl)
-                && string.IsNullOrWhiteSpace(buttons))
+                && !string.IsNullOrWhiteSpace(buttonUrl))
             {
                 card.Actions.Add(new AdaptiveOpenUrlAction()
                 {
@@ -141,32 +112,13 @@ namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(buttons))
+            card.Body.Add(new AdaptiveImage()
             {
-                // enables case insensitive deserialization for card buttons
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                };
-
-                // add the buttons string to the buttons collection for the card
-                card.Actions.AddRange(JsonSerializer.Deserialize<List<AdaptiveOpenUrlAction>>(buttons, options));
-            }
-
-            // if the tracking is disabled, trackingutl will be null/blank and the image will not be included on the card
-            if (!string.IsNullOrWhiteSpace(trackingurl))
-            {
-                string trul = trackingurl + "/?id=[ID]&key=[KEY]";
-
-                card.Body.Add(new AdaptiveImage()
-                {
-                    Url = new Uri(trul, UriKind.RelativeOrAbsolute),
-                    Spacing = AdaptiveSpacing.Small,
-                    Size = AdaptiveImageSize.Small,
-                    IsVisible = false,
-                    AltText = string.Empty,
-                });
-            }
+                Url = new Uri(imgFooter, UriKind.RelativeOrAbsolute),
+                Spacing = AdaptiveSpacing.Default,
+                Size = AdaptiveImageSize.Stretch,
+                AltText = string.Empty,
+            });
 
             return card;
         }
