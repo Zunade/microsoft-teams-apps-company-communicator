@@ -51,8 +51,8 @@ namespace Microsoft.Teams.Apps.CompanyCommunicator.Common.Services.AdaptiveCard
             var version = new AdaptiveSchemaVersion(1, 0);
             AdaptiveCard card = new AdaptiveCard(version);
 
-            string imgHeader = "https://raw.githubusercontent.com/Zunade/images/main/Hypatia(192).png";
-            string imgFooter = "https://raw.githubusercontent.com/Zunade/images/main/confucius192.png";
+            string imgHeader = "https://raw.githubusercontent.com/Zunade/images/main/Header.png";
+            string imgFooter = "https://raw.githubusercontent.com/Zunade/images/main/footer.png";
 
             card.Body.Add(new AdaptiveImage()
             {
